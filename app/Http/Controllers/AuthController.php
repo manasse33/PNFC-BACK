@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Entreprise;
+use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -46,7 +48,9 @@ class AuthController extends Controller
 
 
     
-   public function login(Request $request)
+
+   
+        public function login(Request $request)
 {
     $request->validate([
         'email'    => 'required|email',
@@ -77,7 +81,7 @@ class AuthController extends Controller
 
 
    
-    public function verifyOtp(Request $request)
+public function verifyOtp(Request $request)
 {
     $request->validate([
         'email' => 'required|email',
@@ -86,18 +90,44 @@ class AuthController extends Controller
 
     $user = User::where('email', $request->email)->firstOrFail();
 
+    // Vérifier OTP
     if (!$user->isOtpValid($request->otp)) {
         return response()->json(['message' => "OTP invalide ou expiré"], 422);
     }
 
-   
+    // Activer le compte
     $user->update([
-        'otp_code' => null,
-        'otp_expires_at' => null,
+        'otp_code'        => null,
+        'otp_expires_at'  => null,
         'email_verified_at' => now(),
     ]);
 
+    // Récupérer l'ID du rôle entreprise dynamiquement
+    $entrepriseRoleId = Role::where('name', 'entreprise')->value('id');
+
+    if ($user->role_id == $entrepriseRoleId) {
+
+        // Créer l'entreprise si elle n'existe pas
+        if (!$user->entreprise) {
+            Entreprise::create([
+                'user_id'     => $user->id,
+                'name'        => $user->name . " Entreprise",
+                'sector'      => null,
+                'adresse'     => null,
+                'description' => null,
+                'logo'        => null,
+                'country_id'  => null,
+                'city_id'     => null,
+                'status'      => 'pending',
+            ]);
+        }
+    }
+
+    // Générer token
     $token = $user->createToken('auth_token')->plainTextToken;
+
+    // Charger l'entreprise et ses documents
+    $user->load(['entreprise.documents']);
 
     return response()->json([
         'message' => "Compte activé avec succès !",
@@ -105,6 +135,8 @@ class AuthController extends Controller
         'user'    => $user,
     ]);
 }
+
+
 
     
     public function me(Request $request)
