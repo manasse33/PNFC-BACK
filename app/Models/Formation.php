@@ -21,6 +21,7 @@ class Formation extends Model
         'duree',
         'end_date',
         'image_couverture',
+        'views'
     ];
 
     protected $casts = [

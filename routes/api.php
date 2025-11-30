@@ -7,6 +7,9 @@ use App\Http\Controllers\EntrepriseController;
 use App\Http\Controllers\CountryController;
 use App\Http\Controllers\CityController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\FormationController;
+
+
 
 // Route par défaut générée par Laravel
 Route::get('/user', function (Request $request) {
@@ -58,4 +61,18 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/entreprise/{id}', [EntrepriseController::class, 'show']);
     });
 
-}); // <-- celle-ci tu l'avais oubliée !
+}); 
+
+
+// PUBLIC
+Route::get('/formations', [FormationController::class, 'index']);
+Route::get('/formations/{id}', [FormationController::class, 'show']);
+
+// ENTREPRISE (protégé par Sanctum)
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/formations', [FormationController::class, 'store']);
+    Route::put('/formations/{id}', [FormationController::class, 'update']);
+    Route::delete('/formations/{id}', [FormationController::class, 'destroy']);
+    Route::get('/formations/stats', [FormationController::class, 'stats']);
+
+});

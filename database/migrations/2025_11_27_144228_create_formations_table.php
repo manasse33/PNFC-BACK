@@ -24,6 +24,7 @@ return new class extends Migration
             $table->integer('duree')->nullable(); // Durée en heures ou jours
             $table->date('end_date')->nullable();
             $table->string('image_couverture')->nullable();
+            $table->unsignedBigInteger('views')->default(0);
             $table->timestamps();
         });
 
@@ -36,5 +37,6 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('formations');
+        
     }
 };
