@@ -7,6 +7,7 @@ use App\Models\Entreprise;
 use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;  // ✅ IMPORT MAIL
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
