@@ -20,7 +20,7 @@ class Formation extends Model
         'price',
         'duree',
         'end_date',
-        'image_couverture',
+        'image',
         'views'
     ];
 

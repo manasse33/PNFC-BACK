@@ -143,6 +143,7 @@ class AuthController extends Controller
 
         // Récupérer le rôle (belongsTo)
         $role = $user->role ? $user->role->name : null;
+        $user->load('entreprise');
 
         // Générer le token
         $token = $user->createToken('auth_token')->plainTextToken;

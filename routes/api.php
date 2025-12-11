@@ -70,6 +70,7 @@ Route::get('/formations/{id}', [FormationController::class, 'show']);
 
 // ENTREPRISE (protégé par Sanctum)
 Route::middleware('auth:sanctum')->group(function () {
+    Route::get('formations/entreprise/{id}', [FormationController::class, 'getByEntreprise']);
     Route::post('/formations', [FormationController::class, 'store']);
     Route::put('/formations/{id}', [FormationController::class, 'update']);
     Route::delete('/formations/{id}', [FormationController::class, 'destroy']);

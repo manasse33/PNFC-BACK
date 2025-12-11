@@ -19,66 +19,93 @@ class FormationController extends Controller
         return response()->json($formations);
     }
 
+
+    public function getByEntreprise($id)
+    {
+        $formations = Formation::with(['entreprise', 'city'])
+            ->where('entreprise_id', $id)
+            ->latest()
+            ->get();
+    
+        return response()->json($formations);
+    }
+    
+
     /**
      * Créer une formation
      */
-  public function store(Request $request)
-{
-    try {
-        $request->validate([
-            'title' => 'required|string',
-            'description' => 'required|string',
-            'resume' => 'nullable|string',
-            'programme' => 'nullable|string',
-            'sector' => 'required|string',
-            'city_id' => 'required|exists:cities,id',
-            'price' => 'required|numeric',
-            'duree' => 'required|string',
-            'end_date' => 'required|date',
-            'image_couverture' => 'nullable|image|max:4096', // <= CHANGÉ
-        ]);
-
-        $user = Auth::user();
-
-        if (!$user->entreprise) {
-            return response()->json(['message' => "Vous n'êtes pas une entreprise"], 403);
+    public function store(Request $request)
+    {
+        try {
+            // Validation
+            $request->validate([
+                'title' => 'required|string',
+                'description' => 'required|string',
+                'resume' => 'nullable|string',
+                'programme' => 'nullable|string',
+                'sector' => 'required|string',
+                'city_id' => 'required|exists:cities,id',
+                'price' => 'required|numeric',
+                'duree' => 'required|string',
+                'end_date' => 'required|date',
+                'image' => 'required|file|max:4096',
+            ]);
+    
+            $user = Auth::user();
+    
+            if (!$user->entreprise) {
+                return response()->json(['message' => "Vous n'êtes pas une entreprise"], 403);
+            }
+    
+            // Upload image
+            $imagePath = null;
+            $imageUrl = null;
+            if ($request->hasFile('image')) {
+                $imagePath = $request->file('image')->store('formations', 'public');
+                $imageUrl = asset('storage/' . $imagePath);
+            }
+    
+            // Création formation
+            $formation = Formation::create([
+                'entreprise_id' => $user->entreprise->id,
+                'title' => $request->title,
+                'description' => $request->description,
+                'resume' => $request->resume,
+                'programme' => $request->programme,
+                'sector' => $request->sector,
+                'city_id' => $request->city_id,
+                'price' => $request->price,
+                'duree' => $request->duree,
+                'end_date' => $request->end_date,
+                'image' => $imagePath,
+            ]);
+    
+            return response()->json([
+                "message" => "Formation créée avec succès",
+                "formation" => [
+                    'id' => $formation->id,
+                    'title' => $formation->title,
+                    'description' => $formation->description,
+                    'resume' => $formation->resume,
+                    'programme' => $formation->programme,
+                    'sector' => $formation->sector,
+                    'city_id' => $formation->city_id,
+                    'price' => $formation->price,
+                    'duree' => $formation->duree,
+                    'end_date' => $formation->end_date,
+                    'image_couverture_url' => $imageUrl,
+                ]
+            ], 201);
+    
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => "Erreur lors de la création",
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        // 📌 Upload de l'image
-        $imagePath = null;
-        if ($request->hasFile('image_couverture')) {
-            // stockage dans storage/app/public/formations
-            $imagePath = $request->file('image_couverture')->store('formations', 'public');
-        }
-
-        // 📌 Création formation
-        $formation = Formation::create([
-            'entreprise_id' => $user->entreprise->id,
-            'title' => $request->title,
-            'description' => $request->description,
-            'resume' => $request->resume,
-            'programme' => $request->programme,
-            'sector' => $request->sector,
-            'city_id' => $request->city_id,
-            'price' => $request->price,
-            'duree' => $request->duree,
-            'end_date' => $request->end_date,
-            'image_couverture' => $imagePath, // <= chemin enregistré
-        ]);
-
-        return response()->json([
-            "message" => "Formation créée avec succès",
-            "formation" => $formation
-        ], 201);
-
-    } catch (\Exception $e) {
-        return response()->json([
-            'message' => "Erreur lors de la création",
-            'error' => $e->getMessage()
-        ], 500);
     }
-}
-
+    
+    
 
 
     /**

@@ -23,7 +23,7 @@ return new class extends Migration
             $table->decimal('price', 10, 2)->default(0);
             $table->integer('duree')->nullable(); // Durée en heures ou jours
             $table->date('end_date')->nullable();
-            $table->string('image_couverture')->nullable();
+            $table->string('image')->nullable();
             $table->unsignedBigInteger('views')->default(0);
             $table->timestamps();
         });
