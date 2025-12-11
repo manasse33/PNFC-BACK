@@ -19,18 +19,29 @@ class FormationController extends Controller
         return response()->json($formations);
     }
 
-
-    public function getByEntreprise($id)
+    public function getFormationsByEntreprise()
     {
+        // 1) On récupère l’utilisateur connecté
+        $user = Auth::user();
+    
+        // 2) Vérifier que cet utilisateur possède une entreprise
+        if (!$user->entreprise) {
+            return response()->json([
+                'message' => 'Aucune entreprise associée à cet utilisateur.'
+            ], 404);
+        }
+    
+        // 3) Récupérer l’ID de l’entreprise
+        $entrepriseId = $user->entreprise->id;
+    
+        // 4) Récupérer uniquement les formations liées à cette entreprise
         $formations = Formation::with(['entreprise', 'city'])
-            ->where('entreprise_id', $id)
+            ->where('entreprise_id', $entrepriseId)
             ->latest()
             ->get();
     
         return response()->json($formations);
     }
-    
-
     /**
      * Créer une formation
      */
@@ -162,12 +173,31 @@ class FormationController extends Controller
     }
 
     public function stats()
-{
-    $stats = Formation::select('id', 'title', 'views')
-        ->orderBy('views', 'desc')
-        ->get();
+    {
+        $user = Auth::user();
+        $entreprise = $user->entreprise;
+    
+        if (!$entreprise) {
+            return response()->json([
+                'active_formations' => 0,
+                'total_formations' => 0,
+                'total_demands' => 0 // ou supprimer ce champ si inutile
+            ]);
+        }
+    
+        $total_formations = Formation::where('entreprise_id', $entreprise->id)->count();
+        $active_formations = $entreprise->status === 'validated' ? $total_formations : 0;
 
-    return response()->json($stats);
-}
+                    
+    
 
+        $total_demands = 4;
+
+        return response()->json([
+            'active_formations' => $active_formations,
+            'total_formations' => $total_formations,
+            'total_demands' => $total_demands // si pas de table demandes
+        ]);
+    }
+    
 }

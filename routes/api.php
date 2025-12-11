@@ -21,7 +21,7 @@ Route::get('/user', function (Request $request) {
 // AUTH
 // ------------------------------------------------------
 Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login', [AuthController::class, 'login'])->name('login');
 Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
 
 Route::prefix('admin')->group(function () {
@@ -65,15 +65,16 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
 // PUBLIC
-Route::get('/formations', [FormationController::class, 'index']);
-Route::get('/formations/{id}', [FormationController::class, 'show']);
-
 // ENTREPRISE (protégé par Sanctum)
 Route::middleware('auth:sanctum')->group(function () {
-    Route::get('formations/entreprise/{id}', [FormationController::class, 'getByEntreprise']);
+    Route::get('formations/entreprise', [FormationController::class, 'getFormationsByEntreprise']);
+    Route::get('formations/stats', [FormationController::class, 'stats']);
+
     Route::post('/formations', [FormationController::class, 'store']);
     Route::put('/formations/{id}', [FormationController::class, 'update']);
     Route::delete('/formations/{id}', [FormationController::class, 'destroy']);
-    Route::get('/formations/stats', [FormationController::class, 'stats']);
-
 });
+
+// ROUTES PUBLIQUES
+Route::get('/formations', [FormationController::class, 'index']);
+Route::get('/formations/{id}', [FormationController::class, 'show']); // doit être dernier

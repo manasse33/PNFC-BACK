@@ -47,4 +47,13 @@ class Formation extends Model
     {
         return $this->end_date ? $this->end_date->isPast() : false;
     }
+
+    // App/Models/Formation.php
+protected $appends = ['image_url'];
+
+public function getImageUrlAttribute()
+{
+    return $this->image ? asset('storage/' . $this->image) : null;
+}
+
 }

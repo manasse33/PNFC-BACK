@@ -26,7 +26,7 @@ class EntrepriseController extends Controller
             'description' => $request->description,
             'country_id'  => $request->country_id,
             'city_id'     => $request->city_id,
-            'status'      => 'pending'
+            'status'      => 'validated'
         ]);
 
         return response()->json($entreprise, 201);
